@@ -6,7 +6,7 @@
 //  Copyright © 2018 Jeremy Fuellert. All rights reserved.
 //
 
-import UIKit
+import CoreLocation
 
 class RestaurantModelFactory: NSObject {
     
@@ -14,31 +14,9 @@ class RestaurantModelFactory: NSObject {
     static private let kSearchResultCount = 10
     
     // MARK: - Fetch
-    @discardableResult public static func fetchRestaurantsWithTerm(_ term: String, completion: @escaping (RestaurantResultsModel?, Error?) -> ()) -> URLSessionDataTask? {
+    @discardableResult public static func fetchRestaurantsWithTerm(_ term: String, coordinates: CLLocationCoordinate2D, completion: @escaping (RestaurantResultsModel?, Error?) -> ()) -> URLSessionDataTask? {
         
-        return request(.GET, endpoint: "v3/businesses/search?limit=\(kSearchResultCount)&term=\(term)", body: nil, headers: [:]) { (statusCode, error, data) in
-            
-            guard let data = data else {
-                completion(nil, error)
-                return
-            }
-            
-            let result = try? JSONDecoder().decode(RestaurantResultsModel.self, from: data)
-            completion(result, error)
-        }
-    }
-}
-
-// MARK: - Authenticate
-extension RestaurantModelFactory {
-    
-    @discardableResult public static func authenticate(_ completion: @escaping (String?, Error?) -> ()) -> URLSessionDataTask? {
-        
-        let body = ["client_id": kClientID,
-                    "client_secret": kAPIKey,
-                    "grant_type": "client_credentials"]
-        
-        return rawRequest(.POST, endpoint: "oauth2/token", body: body, headers: [:]) { (statusCode, error, data) in
+        return request(.GET, endpoint: "businesses/search?limit=\(kSearchResultCount)&term=\(term)&latitude=\(coordinates.latitude)&longitude=\(coordinates.longitude)", body: nil, headers: [:]) { (statusCode, error, data) in
             
             guard let data = data else {
                 DispatchQueue.main.async {
@@ -47,8 +25,9 @@ extension RestaurantModelFactory {
                 return
             }
             
+            let result = try? JSONDecoder().decode(RestaurantResultsModel.self, from: data)
             DispatchQueue.main.async {
-                completion(nil, error)
+                completion(result, error)
             }
         }
     }
@@ -63,43 +42,26 @@ extension RestaurantModelFactory {
     }
     
     //MARK: Constants
-    static private let kServerURL                     = "https://api.yelp.com/"
-    static private let kClientID                      = "kAvzDzByPKICyHPupNUqCg"
+    static private let kServerURL                     = "https://api.yelp.com/v3/"
     static private let kAPIKey                        = "K0XM1oNmhguLAH9wStRSGTBp8Jw1LEyPQ_gNXK42W91Ty7MVKPraXjHseAFfwNpptd-WKvfxI8eisJHfQYHJuxB2uNHpqOrthbnce7XzpaTxiGq8xaAwyKKgCRDRW3Yx"
     static private let kAuthorizationTokenKey         = "Authorization"
     static private let kAuthorizationTokenValuePrefix = "Bearer"
     static private let kContentTypeKey                = "Content-Type"
-    static private let kContentTypeValue              = "application/x-www-form-urlencoded, application/json"
-    
+    static private let kContentTypeValue              = "application/json"
+
     // MARK: - Requests
-    private static func session(_ headers: [String: Any]) -> URLSession {
+    static private func session(_ headers: [String: String]) -> URLSession {
         
-        let sessionConfiguration         = URLSessionConfiguration.default
-        sessionConfiguration.httpShouldSetCookies = true
-        var modifiedHeaders              = headers
-        modifiedHeaders[kContentTypeKey] = kContentTypeValue
-        
-        if let authenticationToken = PersistentStore.authenticationToken {
-            modifiedHeaders[kAuthorizationTokenKey] = "\(kAuthorizationTokenValuePrefix) \(authenticationToken)"
-        }
-                
+        let sessionConfiguration                   = URLSessionConfiguration.default
+        var modifiedHeaders                        = headers
+        modifiedHeaders[kContentTypeKey]           = kContentTypeValue
+        modifiedHeaders[kAuthorizationTokenKey]    = "\(kAuthorizationTokenValuePrefix) \(kAPIKey)"
         sessionConfiguration.httpAdditionalHeaders = modifiedHeaders
 
         return URLSession(configuration: sessionConfiguration)
     }
     
-    @discardableResult static fileprivate func request(_ requestType: RequestType = .GET, endpoint: String, body: [String: Any]? = [:], headers: [String: Any] = [:], completion: @escaping (Int, Error?, Data?) ->()) -> URLSessionDataTask? {
-
-        guard PersistentStore.authenticationToken?.isEmpty == false else {
-            return authenticate({ (_, error) in
-                return rawRequest(requestType, endpoint: endpoint, body: body, headers: headers, completion: completion)
-            })
-        }
-        
-        return rawRequest(requestType, endpoint: endpoint, body: body, headers: headers, completion: completion)
-    }
-    
-    @discardableResult static private func rawRequest(_ requestType: RequestType = .GET, endpoint: String, body: [String: Any]? = [:], headers: [String: Any] = [:], completion: @escaping (Int, Error?, Data?) ->()) -> URLSessionDataTask? {
+    @discardableResult static private func request(_ requestType: RequestType = .GET, endpoint: String, body: [String: Any]? = [:], headers: [String: String] = [:], completion: @escaping (Int, Error?, Data?) ->()) -> URLSessionDataTask? {
         
         guard let url = URL(string: kServerURL + endpoint) else {
             return nil

@@ -11,6 +11,7 @@ import Foundation
 struct RestaurantModel: Decodable {
 
     // MARK: - Properties
+    var identifier: String?
     var name: String?
     var imageUrlString: String?
     var URLString: String?
@@ -18,6 +19,10 @@ struct RestaurantModel: Decodable {
     var coordinates: CoordinatesModel?
     
     enum CodingKeys: String, CodingKey {
+        case identifier     = "id"
+        case name
+        case coordinates
+        case location       = "location"
         case imageUrlString = "image_url"
         case URLString      = "url"
     }

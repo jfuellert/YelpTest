@@ -11,18 +11,12 @@ import CoreData
 class PersistentStore: NSObject {
 
     // MARK: - Properties
-    static var authenticationToken: String? {
+    static var favourites: Set<String> {
         set {
-            user?.authenticationToken = newValue
+            user?.favourites = newValue
         }
         get {
-            return user?.authenticationToken
-        }
-    }
-    
-    static var favourites: [String]? {
-        get {
-            return user?.favourites
+            return user?.favourites ?? []
         }
     }
     
@@ -34,20 +28,23 @@ class PersistentStore: NSObject {
                 //Get current user
                 if let records = try managedObjectContext.fetch(User.fetchRequest()) as? [User] {
                     result = records
-                //Other create a new user
-                } else {
-                    _ = User(context: managedObjectContext)
-                    do {
-                        try managedObjectContext.save()
-                    } catch {
-                        // failed saving
-                    }
                 }
             } catch {
 
             }
             
-            return result.first
+            if let item = result.first {
+                return item
+            }
+            
+            let user = NSEntityDescription.insertNewObject(forEntityName: NSStringFromClass(User.self), into: managedObjectContext) as? User
+            do {
+                try managedObjectContext.save()
+            } catch {
+                // failed saving
+            }
+            
+            return user
         }
     }
     

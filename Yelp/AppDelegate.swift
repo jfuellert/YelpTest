@@ -17,11 +17,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Init
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        window = UIWindow(frame: UIScreen.main.bounds)
-        window?.rootViewController = RootViewController()
+        window                     = UIWindow(frame: UIScreen.main.bounds)
+        window?.rootViewController = UINavigationController(rootViewController: RootViewController())
         window?.makeKeyAndVisible()
         
+        createGlobalAppearance()
+        
         return true
+    }
+    
+    private func createGlobalAppearance() {
+        UINavigationBar.appearance().tintColor = .red
     }
 
     func applicationWillTerminate(_ application: UIApplication) {

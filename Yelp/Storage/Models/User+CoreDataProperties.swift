@@ -18,6 +18,6 @@ extension User {
     }
 
     @NSManaged public var authenticationToken: String?
-    @NSManaged public var favourites: [String]?
+    @NSManaged public var favourites: Set<String>?
 
 }
