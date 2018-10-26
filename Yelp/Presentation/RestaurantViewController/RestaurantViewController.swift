@@ -78,7 +78,7 @@ class RestaurantViewController: UIViewController {
         let label                                       = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font                                      = UIFontMetrics.default.scaledFont(for: UIFont.preferredFont(forTextStyle: .headline))
-        label.text                                      = NSLocalizedString("Most recent review:", comment: "")
+        label.text                                      = NSLocalizedString("Top review:", comment: "")
         
         return label
     }()
