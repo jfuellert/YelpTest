@@ -100,6 +100,7 @@ extension RootViewController {
             return
         }
         
+        listViewController.reloadDataWithMessage()
         listViewController.collectionView.alpha                    = 0.3
         listViewController.collectionView.isUserInteractionEnabled = false
         listViewController.activityIndicator.startAnimating()

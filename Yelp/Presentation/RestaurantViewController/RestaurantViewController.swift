@@ -24,6 +24,15 @@ class RestaurantViewController: UIViewController {
 
         return scrollView
     }()
+    
+    fileprivate let contentView: UIView = {
+        
+        let contentView                                       = UIView()
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        
+        return contentView
+    }()
+    
     fileprivate let imageView: UIImageView = {
         
         let imageView                                       = UIImageView()
@@ -59,11 +68,41 @@ class RestaurantViewController: UIViewController {
         
         let mapView                                       = MKMapView()
         mapView.translatesAutoresizingMaskIntoConstraints = false
+        mapView.isHidden                                  = true
         
         return mapView
     }()
     
+    fileprivate let reviewTitleLabel: UILabel = {
+        
+        let label                                       = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font                                      = UIFontMetrics.default.scaledFont(for: UIFont.preferredFont(forTextStyle: .headline))
+        label.text                                      = NSLocalizedString("Most recent review:", comment: "")
+        
+        return label
+    }()
+    
+    fileprivate let reviewLabel: UILabel = {
+        
+        let label                                       = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font                                      = UIFontMetrics.default.scaledFont(for: UIFont.preferredFont(forTextStyle: .body))
+        label.numberOfLines                             = 0
+
+        return label
+    }()
+    
+    fileprivate let activityIndicator: UIActivityIndicatorView = {
+        
+        let activityIndicator                                       = UIActivityIndicatorView(style: .gray)
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        
+        return activityIndicator
+    }()
+    
     fileprivate var identifier: String?
+    fileprivate var request: URLSessionDataTask?
     
     // MARK: - Init
     override func viewDidLoad() {
@@ -71,10 +110,14 @@ class RestaurantViewController: UIViewController {
         
         view.backgroundColor = .white
         view.addSubview(scrollView)
-        scrollView.addSubview(imageView)
-        scrollView.addSubview(titleLabel)
-        scrollView.addSubview(subTitleLabel)
-        scrollView.addSubview(mapView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(imageView)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(subTitleLabel)
+        contentView.addSubview(mapView)
+        contentView.addSubview(reviewTitleLabel)
+        contentView.addSubview(reviewLabel)
+        reviewLabel.addSubview(activityIndicator)
         createFavouriteButton()
         createConstraints()
         updateFavourite()
@@ -109,6 +152,9 @@ class RestaurantViewController: UIViewController {
     // MARK: - Updates
     func update(_ restaurantModel: RestaurantModel) {
         
+        mapView.isHidden = false
+        
+        //Set data
         identifier = restaurantModel.identifier
         
         if let imageURL = restaurantModel.imageUrlString, let url = URL(string: imageURL) {
@@ -123,6 +169,10 @@ class RestaurantViewController: UIViewController {
         subTitleLabel.text = restaurantModel.URLString
         updateAddress(restaurantModel)
         updateLocation(restaurantModel.coordinates)
+        
+        //Load review
+        reviewLabel.text = nil
+        fetchReview()
     }
     
     private func updateAddress(_ model: RestaurantModel) {
@@ -174,7 +224,7 @@ class RestaurantViewController: UIViewController {
     }
     
     fileprivate func updateContentSize() {
-        scrollView.contentSize = CGSize(width: view.frame.width, height: mapView.frame.maxY)
+        scrollView.contentSize = CGSize(width: view.frame.width, height: reviewLabel.frame.maxY + RestaurantViewController.contentVerticalPadding)
     }
     
     // MARK: - Constraints
@@ -184,6 +234,11 @@ class RestaurantViewController: UIViewController {
                                     scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                                     scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                                     scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                                    
+                                    contentView.topAnchor.constraint(equalTo: view.topAnchor),
+                                    contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                                    contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                                    contentView.bottomAnchor.constraint(equalTo: reviewLabel.bottomAnchor, constant: RestaurantViewController.contentVerticalPadding),
                                     
                                     imageView.topAnchor.constraint(equalTo: scrollView.topAnchor),
                                     imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -203,6 +258,17 @@ class RestaurantViewController: UIViewController {
                                     mapView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.3),
                                     mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: RestaurantViewController.contentHorizontalPadding),
                                     mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -RestaurantViewController.contentHorizontalPadding),
+                                    
+                                    reviewTitleLabel.topAnchor.constraint(equalTo: mapView.bottomAnchor, constant: RestaurantViewController.contentVerticalPadding),
+                                    reviewTitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: RestaurantViewController.contentHorizontalPadding),
+                                    reviewTitleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -RestaurantViewController.contentHorizontalPadding),
+                                    
+                                    reviewLabel.topAnchor.constraint(equalTo: reviewTitleLabel.bottomAnchor, constant: RestaurantViewController.contentVerticalPadding),
+                                    reviewLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: RestaurantViewController.contentHorizontalPadding),
+                                    reviewLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -RestaurantViewController.contentHorizontalPadding),
+                                    
+                                    activityIndicator.centerXAnchor.constraint(equalTo: reviewLabel.centerXAnchor),
+                                    activityIndicator.centerYAnchor.constraint(equalTo: reviewLabel.centerYAnchor)
                                      ])
     }
 }
@@ -223,5 +289,35 @@ extension RestaurantViewController {
         }
         
         updateFavourite()
+    }
+}
+
+// MARK: - Networking
+extension RestaurantViewController {
+    
+    @objc fileprivate func fetchReview() {
+        
+        request?.cancel()
+        
+        guard let identifier = identifier else {
+            return
+        }
+        
+        activityIndicator.startAnimating()
+        request = RestaurantModelFactory.fetchReviewsWithRestaurantIdentifier(identifier, completion: { [weak self] (model, error) in
+            
+            guard let `self` = self else {
+                return
+            }
+            
+            self.activityIndicator.stopAnimating()
+            guard let model = model, let firstReview = model.reviews.first else {
+                self.reviewLabel.text = NSLocalizedString("No reviews found", comment: "")
+                return
+            }
+            
+            self.reviewLabel.text = firstReview.text
+            self.updateContentSize()
+        })
     }
 }

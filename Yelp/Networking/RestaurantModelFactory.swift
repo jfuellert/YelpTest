@@ -31,6 +31,24 @@ class RestaurantModelFactory: NSObject {
             }
         }
     }
+    
+    @discardableResult public static func fetchReviewsWithRestaurantIdentifier(_ identifier: String, completion: @escaping (ReviewResultsModel?, Error?) -> ()) -> URLSessionDataTask? {
+        
+        return request(.GET, endpoint: "businesses/\(identifier)/reviews", body: nil, headers: [:]) { (statusCode, error, data) in
+            
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+                return
+            }
+            
+            let result = try? JSONDecoder().decode(ReviewResultsModel.self, from: data)
+            DispatchQueue.main.async {
+                completion(result, error)
+            }
+        }
+    }
 }
 
 // MARK: - Utility

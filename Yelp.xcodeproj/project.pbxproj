@@ -23,7 +23,9 @@
 		C7D5FDF0218167C60053F091 /* ListViewCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D5FDEF218167C60053F091 /* ListViewCollectionViewCell.swift */; };
 		C7D5FDF42181686C0053F091 /* Reusable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D5FDF32181686C0053F091 /* Reusable.swift */; };
 		C7D5FDF621826C0A0053F091 /* Debounce.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D5FDF521826C0A0053F091 /* Debounce.swift */; };
-		C7D5FDF92182838F0053F091 /* Yelp.xcdatamodeld in Resources */ = {isa = PBXBuildFile; fileRef = C7D5FDB4217F66F90053F091 /* Yelp.xcdatamodeld */; };
+		C7D5FDFB2183917C0053F091 /* ReviewResultsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D5FDFA2183917C0053F091 /* ReviewResultsModel.swift */; };
+		C7D5FDFD2183918E0053F091 /* ReviewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D5FDFC2183918E0053F091 /* ReviewModel.swift */; };
+		C7D5FDFE21839D0B0053F091 /* Yelp.xcdatamodeld in Resources */ = {isa = PBXBuildFile; fileRef = C7D5FDB4217F66F90053F091 /* Yelp.xcdatamodeld */; };
 		D7C19157BF2CBF91DC20E5D3 /* Pods_Yelp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C59B407821F858185DF3941 /* Pods_Yelp.framework */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +63,8 @@
 		C7D5FDEF218167C60053F091 /* ListViewCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListViewCollectionViewCell.swift; sourceTree = "<group>"; };
 		C7D5FDF32181686C0053F091 /* Reusable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reusable.swift; sourceTree = "<group>"; };
 		C7D5FDF521826C0A0053F091 /* Debounce.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Debounce.swift; sourceTree = "<group>"; };
+		C7D5FDFA2183917C0053F091 /* ReviewResultsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewResultsModel.swift; sourceTree = "<group>"; };
+		C7D5FDFC2183918E0053F091 /* ReviewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewModel.swift; sourceTree = "<group>"; };
 		FA48F51DA9197C60571C61A6 /* Pods-Yelp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Yelp.release.xcconfig"; path = "Pods/Target Support Files/Pods-Yelp/Pods-Yelp.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -170,6 +174,8 @@
 			children = (
 				C7D5FDDA217F87F80053F091 /* RestaurantModel.swift */,
 				C7D5FDE22181429C0053F091 /* RestaurantResultsModel.swift */,
+				C7D5FDFC2183918E0053F091 /* ReviewModel.swift */,
+				C7D5FDFA2183917C0053F091 /* ReviewResultsModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -316,7 +322,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C7D5FDF92182838F0053F091 /* Yelp.xcdatamodeld in Resources */,
+				C7D5FDFE21839D0B0053F091 /* Yelp.xcdatamodeld in Resources */,
 				C7D5FDBB217F66FC0053F091 /* LaunchScreen.storyboard in Resources */,
 				C7D5FDB8217F66FC0053F091 /* Assets.xcassets in Resources */,
 			);
@@ -380,11 +386,13 @@
 				C7D5FDD6217F861F0053F091 /* PersistentStore.swift in Sources */,
 				C7D5FDDB217F87F80053F091 /* RestaurantModel.swift in Sources */,
 				C7D5FDD8217F87B30053F091 /* RestaurantModelFactory.swift in Sources */,
+				C7D5FDFD2183918E0053F091 /* ReviewModel.swift in Sources */,
 				C7D5FDF0218167C60053F091 /* ListViewCollectionViewCell.swift in Sources */,
 				C7D5FDD2217F85890053F091 /* RootViewController.swift in Sources */,
 				C7D5FDE32181429C0053F091 /* RestaurantResultsModel.swift in Sources */,
 				C7D5FDAE217F66F90053F091 /* AppDelegate.swift in Sources */,
 				C7D5FDED21815C1E0053F091 /* User+CoreDataClass.swift in Sources */,
+				C7D5FDFB2183917C0053F091 /* ReviewResultsModel.swift in Sources */,
 				C7D5FDF621826C0A0053F091 /* Debounce.swift in Sources */,
 				C7D5FDEC21815C1E0053F091 /* User+CoreDataProperties.swift in Sources */,
 				C7D5FDDE21813E2C0053F091 /* ListViewController.swift in Sources */,
